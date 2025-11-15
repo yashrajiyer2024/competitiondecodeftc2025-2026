@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp(name = "V2", group = "Competition")
+@TeleOp(name = "V2-EncoderBackUp", group = "Competition")
 public class TeleOpV2 extends LinearOpMode {
 
     // Hardware

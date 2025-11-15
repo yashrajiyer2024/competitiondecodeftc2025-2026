@@ -27,7 +27,7 @@ public class TeleOpV6 extends LinearOpMode {
     private double WHEEL_DIAMETER = 4.0; // inches
     private double BACKUP_DISTANCE = 12.0; // inches
     private double BACKUP_STEP = 0.5; // inches per D-pad press
-    private double BACKUP_SPEED = 0.5; // fraction of max velocity
+    private double BACKUP_SPEED = 1.0; // fraction of max velocity
 
     // Internal State
     private double targetRPM = 0;

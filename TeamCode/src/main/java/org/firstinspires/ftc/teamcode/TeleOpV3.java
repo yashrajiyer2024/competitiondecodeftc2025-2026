@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp(name = "V3", group = "Competition")
+@TeleOp(name = "V3-FullFledgedDash", group = "Competition")
 public class TeleOpV3 extends LinearOpMode {
 
     // Hardware

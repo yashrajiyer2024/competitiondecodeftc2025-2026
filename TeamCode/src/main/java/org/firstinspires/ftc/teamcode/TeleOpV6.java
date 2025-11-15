@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp(name = "V6-ButtonPadExtended", group = "Competition")
+@TeleOp(name = "V6-ButtonEncoderBased", group = "Competition")
 public class TeleOpV6 extends LinearOpMode {
 
     // Hardware
@@ -25,9 +25,9 @@ public class TeleOpV6 extends LinearOpMode {
     private double DRIVE_DEADZONE = 0.05;
     private double DRIVE_MAX_RPM = 6000;
     private double WHEEL_DIAMETER = 4.0; // inches
-    private double BACKUP_SPEED = 1.0;
     private double BACKUP_DISTANCE = 12.0; // inches
-    private double BACKUP_STEP = 0.5; // inches per button press
+    private double BACKUP_STEP = 0.5; // inches per D-pad press
+    private double BACKUP_SPEED = 0.5; // fraction of max velocity
 
     // Internal State
     private double targetRPM = 0;
@@ -37,7 +37,7 @@ public class TeleOpV6 extends LinearOpMode {
     private boolean lastFlapToggle = false;
     private long flapTimer = 0;
     private boolean isBackingUp = false;
-    private long backupStartTime = 0;
+    private int backupTargetTicks = 0;
 
     // D-pad toggle tracking
     private boolean lastDpadUp = false;
@@ -55,7 +55,7 @@ public class TeleOpV6 extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            adjustLauncherAndBackup();
+            adjustLauncherAndBackupDistance();
             handleBackup();
             if (!isBackingUp) mecanumDrive();
             controlIntake();
@@ -120,7 +120,7 @@ public class TeleOpV6 extends LinearOpMode {
         backRight.setVelocity(br * DRIVE_TICKS_PER_SEC);
     }
 
-    private void adjustLauncherAndBackup() {
+    private void adjustLauncherAndBackupDistance() {
         // Adjust HIGH_RPM
         if (gamepad1.dpad_up && !lastDpadUp) HIGH_RPM -= HIGH_RPM_STEP;
         if (gamepad1.dpad_down && !lastDpadDown) HIGH_RPM += HIGH_RPM_STEP;
@@ -130,7 +130,7 @@ public class TeleOpV6 extends LinearOpMode {
         // Adjust BACKUP_DISTANCE
         if (gamepad1.dpad_left && !lastDpadLeft) BACKUP_DISTANCE -= BACKUP_STEP;
         if (gamepad1.dpad_right && !lastDpadRight) BACKUP_DISTANCE += BACKUP_STEP;
-        if (BACKUP_DISTANCE < 1) BACKUP_DISTANCE = 1; // minimum 1 inch
+        if (BACKUP_DISTANCE < 1) BACKUP_DISTANCE = 1;
         lastDpadLeft = gamepad1.dpad_left;
         lastDpadRight = gamepad1.dpad_right;
     }
@@ -139,22 +139,49 @@ public class TeleOpV6 extends LinearOpMode {
         if (gamepad1.x && !isBackingUp) {
             double wheelCircumference = Math.PI * WHEEL_DIAMETER;
             double rotations = BACKUP_DISTANCE / wheelCircumference;
-            double backupMagnitude = Math.abs(DRIVE_TICKS_PER_SEC * BACKUP_SPEED);
-            frontLeft.setVelocity(-backupMagnitude);
-            frontRight.setVelocity(-backupMagnitude);
-            backLeft.setVelocity(-backupMagnitude);
-            backRight.setVelocity(-backupMagnitude);
+            backupTargetTicks = (int)(rotations * TICKS_PER_REV);
 
-            backupStartTime = System.currentTimeMillis();
+            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            frontLeft.setTargetPosition(-backupTargetTicks);
+            frontRight.setTargetPosition(-backupTargetTicks);
+            backLeft.setTargetPosition(-backupTargetTicks);
+            backRight.setTargetPosition(-backupTargetTicks);
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            double backupVelocity = DRIVE_TICKS_PER_SEC * BACKUP_SPEED;
+            frontLeft.setVelocity(backupVelocity);
+            frontRight.setVelocity(backupVelocity);
+            backLeft.setVelocity(backupVelocity);
+            backRight.setVelocity(backupVelocity);
+
             isBackingUp = true;
         }
 
-        // Stop backup after duration
-        if (isBackingUp && System.currentTimeMillis() - backupStartTime >= BACKUP_DURATION) {
+        // Stop automatically when target reached
+        if (isBackingUp &&
+            !frontLeft.isBusy() &&
+            !frontRight.isBusy() &&
+            !backLeft.isBusy() &&
+            !backRight.isBusy()) {
+
+            frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
             frontLeft.setVelocity(0);
             frontRight.setVelocity(0);
             backLeft.setVelocity(0);
             backRight.setVelocity(0);
+
             isBackingUp = false;
         }
     }

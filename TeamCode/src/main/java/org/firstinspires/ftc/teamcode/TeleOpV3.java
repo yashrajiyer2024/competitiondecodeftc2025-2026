@@ -111,46 +111,63 @@ public class TeleOpV3 extends LinearOpMode {
     }
 
     private void handleBackup() {
-        if (gamepad1.x && !isBackingUp) {
-            double wheelCircumference = Math.PI * WHEEL_DIAMETER;
-            double rotations = BACKUP_DISTANCE / wheelCircumference;
-            backupTargetTicks = (int)(rotations * TICKS_PER_REV);
-
-            frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            frontLeft.setTargetPosition(-backupTargetTicks);
-            frontRight.setTargetPosition(-backupTargetTicks);
-            backLeft.setTargetPosition(-backupTargetTicks);
-            backRight.setTargetPosition(-backupTargetTicks);
-
-            frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            frontLeft.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
-            frontRight.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
-            backLeft.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
-            backRight.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
-
-            isBackingUp = true;
+        if (gamepad1.x) {
+            if (!isBackingUp) {
+                // Start backup
+                double wheelCircumference = Math.PI * WHEEL_DIAMETER;
+                double rotations = BACKUP_DISTANCE / wheelCircumference;
+                backupTargetTicks = (int)(rotations * TICKS_PER_REV);
+    
+                frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    
+                frontLeft.setTargetPosition(-backupTargetTicks);
+                frontRight.setTargetPosition(-backupTargetTicks);
+                backLeft.setTargetPosition(-backupTargetTicks);
+                backRight.setTargetPosition(-backupTargetTicks);
+    
+                frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    
+                frontLeft.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
+                frontRight.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
+                backLeft.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
+                backRight.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
+    
+                isBackingUp = true;
+            } else {
+                // Interrupt backup
+                frontLeft.setVelocity(0);
+                frontRight.setVelocity(0);
+                backLeft.setVelocity(0);
+                backRight.setVelocity(0);
+    
+                frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    
+                isBackingUp = false;
+            }
         }
-
+    
+        // Finish backup automatically if reached target
         if (isBackingUp) {
             if (!frontLeft.isBusy() && !frontRight.isBusy() && !backLeft.isBusy() && !backRight.isBusy()) {
                 frontLeft.setVelocity(0);
                 frontRight.setVelocity(0);
                 backLeft.setVelocity(0);
                 backRight.setVelocity(0);
-
+    
                 frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
+    
                 isBackingUp = false;
             }
         }

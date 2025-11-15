@@ -133,10 +133,10 @@ public class TeleOpV2 extends LinearOpMode {
             backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            frontLeft.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
-            frontRight.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
-            backLeft.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
-            backRight.setVelocity(DRIVE_TICKS_PER_SEC * 0.5);
+            frontLeft.setVelocity(DRIVE_TICKS_PER_SEC);
+            frontRight.setVelocity(DRIVE_TICKS_PER_SEC);
+            backLeft.setVelocity(DRIVE_TICKS_PER_SEC);
+            backRight.setVelocity(DRIVE_TICKS_PER_SEC);
 
             isBackingUp = true;
         }
